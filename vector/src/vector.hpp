@@ -7,10 +7,8 @@
 #include <cstddef>
 
 namespace sjtu {
-	template<typename T>
+	template<typename T, typename Alloc = std::allocator<T>>
 	class vector {
-		using Alloc = std::allocator<T>;
-
 	private:
 		class iterator_base_cmp {
 		public:
