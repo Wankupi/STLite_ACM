@@ -8,3 +8,4 @@ enable_testing()
 
 add_subdirectory(vector)
 
+add_subdirectory(map)
