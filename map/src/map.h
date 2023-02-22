@@ -17,11 +17,11 @@ class my_true_type {};
 class my_false_type {};
 enum NodeColor { red,
 				 black };
-template<
-		class Key,
-		class T,
-		class Compare = std::less<Key>,
-		template<typename Type> class Alloc = std::allocator>
+
+template<class Key,
+		 class T,
+		 class Compare = std::less<Key>,
+		 template<typename Type> class Alloc = std::allocator>
 class map {
 public:
 	using value_type = pair<const Key, T>;
@@ -31,9 +31,7 @@ private:
 	public:
 		Node(Node *fa, value_type const &val) : fa(fa), data(val) {}
 		Node(Node *fa, value_type &&val) noexcept : fa(fa), data(std::move(val)) {}
-		/**
-		 * @attention must ensure fa != nullptr
-		 */
+		// @attention must ensure fa != nullptr
 		[[nodiscard]] int who() const { return fa->son[1] == this; }
 		Node *brother() const { return fa->son[fa->son[0] == this]; }
 		void swap_position(Node &rhs) {
@@ -66,7 +64,7 @@ private:
 			return _ptr == rhs._ptr && _map == rhs._map;
 		}
 		bool operator!=(const iterator_base &rhs) const {
-			return !(*this == rhs);
+			return _ptr != rhs._ptr || _map != rhs._map;
 		}
 
 	protected:
@@ -133,36 +131,31 @@ private:
 		pointer operator->() const noexcept { return &this->_ptr->data; }
 	};
 
-
 public:
 	using iterator = iterator_common<false>;
 	using const_iterator = iterator_common<true>;
 
-public:
 	map() = default;
 	map(map const &rhs) : _size(rhs._size) {
 		if (!_size) return;
 		copy_recursive(_rt, rhs._rt);
 	}
-
 	map(map &&rhs) noexcept
 		: _rt(rhs._rt), _size(rhs._size), _alloc(std::move(rhs._alloc)) {
 		rhs._size = 0;
 		rhs._rt = nullptr;
 	}
-
 	map &operator=(map const &rhs) {
 		if (this != &rhs) {
-			release_recurisive(_rt);
+			release_recursive(_rt);
 			_size = rhs._size;
 			if (_size) copy_recursive(_rt, rhs._rt);
 		}
 		return *this;
 	}
-
 	map &operator=(map &&rhs) noexcept {
 		if (this != &rhs) {
-			release_recurisive(_rt);
+			release_recursive(_rt);
 			_rt = rhs._rt;
 			_size = rhs._size;
 			_alloc = std::move(rhs._alloc);
@@ -171,7 +164,6 @@ public:
 		}
 		return *this;
 	}
-
 	~map() { clear(); }
 
 	T &at(const Key &key) { return const_cast<T &>(const_cast<const map *>(this)->at(key)); }
@@ -187,7 +179,6 @@ public:
 		}
 		throw index_out_of_bound{};
 	}
-
 	T &operator[](const Key &key) { return insert({key, T{}}).first->second; }
 	const T &operator[](const Key &key) const { return at(key); }
 
@@ -202,7 +193,7 @@ public:
 	[[nodiscard]] size_t size() const { return _size; }
 
 	void clear() {
-		release_recurisive(_rt);
+		release_recursive(_rt);
 		_size = 0;
 	}
 
@@ -230,7 +221,7 @@ public:
 		if (pos._ptr == nullptr || pos._map != this)
 			throw invalid_iterator{};
 		Node *p = pos._ptr;
-		// after swap, p should have at most 1 child.
+		// after swap, p have at most 1 child.
 		if (p->son[0] && p->son[1]) {
 			iterator pre = pos;
 			--pre;
@@ -243,10 +234,7 @@ public:
 		--_size;
 	}
 
-	size_t count(const Key &key) const {
-		return find(key) != end();
-	}
-
+	size_t count(const Key &key) const { return find(key) != end(); }
 	iterator find(const Key &key) {
 		Node *p = _rt;
 		while (p) {
@@ -259,27 +247,8 @@ public:
 		}
 		return end();
 	}
-
 	const_iterator find(const Key &key) const {
 		return const_cast<map *>(this)->find(key);
-	}
-
-	void debug_recursive_show() {
-		if (!_rt) {
-			std::cout << "empty map" << std::endl;
-			return;
-		}
-		debug_recursive_show(_rt);
-		std::cout << "--- --- ---" << std::endl;
-	}
-	void debug_recursive_show(Node *p) {
-		std::cout << p->data.first << " "
-				  << "rb"[p->color] << " ";
-		if (p->son[0]) std::cout << "ls=" << p->son[0]->data.first << " ";
-		if (p->son[1]) std::cout << "rs=" << p->son[1]->data.first << " ";
-		std::cout << std::endl;
-		if (p->son[0]) debug_recursive_show(p->son[0]);
-		if (p->son[1]) debug_recursive_show(p->son[1]);
 	}
 
 private:
@@ -289,6 +258,32 @@ private:
 	[[no_unique_address]] Alloc<Node> _alloc;
 
 private:
+	void rotate(Node *p) {
+		int m = p->who();
+		Node *fa = p->fa, *pa = p->fa->fa;
+		link(p->son[m ^ 1], fa, m);
+		link(p, pa, pa ? fa->who() : 0);
+		link(fa, p, m ^ 1);
+		if (!pa) _rt = p;
+	}
+	Node *begin_ptr() const {
+		if (!_rt) return end_ptr();
+		Node *p = _rt;
+		while (p->son[0]) p = p->son[0];
+		return p;
+	}
+	Node *end_ptr() const { return nullptr; }
+	Node *back_ptr() const {
+		if (!_rt) return end_ptr();
+		Node *p = _rt;
+		while (p->son[1]) p = p->son[1];
+		return p;
+	}
+	static constexpr void link(Node *son, Node *fa, int n) {
+		son && (son->fa = fa);
+		fa && (fa->son[n] = son);
+	}
+
 	void copy_recursive(Node *&des, Node *src) {
 		des = _alloc.allocate(1);
 		new (des) Node{*src};
@@ -298,25 +293,40 @@ private:
 				des->son[i]->fa = des;
 			}
 	}
-
-	void release_recurisive(Node *&nd) {
+	void release_recursive(Node *&nd) {
 		if (!nd) return;
-		if (nd->son[0]) release_recurisive(nd->son[0]);
-		if (nd->son[1]) release_recurisive(nd->son[1]);
+		if (nd->son[0]) release_recursive(nd->son[0]);
+		if (nd->son[1]) release_recursive(nd->son[1]);
 		nd->~Node();
 		_alloc.deallocate(nd, 1);
 		nd = nullptr;
 	}
 
+	// ensure p has at most one child
+	void erase_on_tree(Node *p) {
+		Node *s = p->son[0] ? p->son[0] : p->son[1];// at least one of them are nullptr.
+		int k = 0;
+		if (p->fa)
+			link(s, p->fa, k = p->who());
+		else
+			(_rt = s) && (s->fa = nullptr);
+		// no need to set s to black, if p is already red.
+		// no need to adjust the tree.
+		if (p->color == red) return;
+		if (!s || s->color == black)
+			update_erase(p->fa, k);
+		else
+			s->color = black;
+	}
 	void update_insert(Node *p) {
 		while (true) {
 			if (!p->fa) {
 				p->color = black;
 				_rt = p;
-				return;
+				break;
 			}
 			if (p->fa->color == black)
-				return;
+				break;
 			// p has red father imply p has grandpa
 			Node *uncle = p->fa->brother();
 			if (uncle && uncle->color == red) {
@@ -341,24 +351,6 @@ private:
 			break;
 		}
 	}
-
-	// ensure p has at most one child
-	void erase_on_tree(Node *p) {
-		Node *s = p->son[0] ? p->son[0] : p->son[1];// at least one of them are nullptr.
-		int k = 0;
-		if (p->fa)
-			link(s, p->fa, k = p->who());
-		else
-			(_rt = s) && (s->fa = nullptr);
-		// no need to set s to black, if p is already red.
-		// no need to adjust the tree.
-		if (p->color == red) return;
-		if (!s || s->color == black)
-			update_erase(p->fa, k);
-		else
-			s->color = black;
-	}
-
 	void update_erase(Node *p, int k) {
 		while (true) {
 			// case 1
@@ -366,17 +358,14 @@ private:
 				_rt = nullptr;
 				break;
 			}
-			//			std::cerr << " at " << p->data.first.val << std::endl;
-
-			Node *s = p->son[k ^ 1];
 			// case 2 : leading to case 4
+			Node *s = p->son[k ^ 1];
 			if (s->color == red) {
 				rotate(s);
 				s->color = black;
 				p->color = red;
 				s = p->son[k ^ 1];
 			}
-			// now s->color == black
 			// case 5: leading to case 6
 			if (Node *sk = s->son[k]; sk && sk->color == red) {
 				rotate(sk);
@@ -414,46 +403,22 @@ private:
 			p = p->fa;
 		}
 	}
-	static constexpr void link(Node *son, Node *fa, int n) {
-		son && (son->fa = fa);
-		fa && (fa->son[n] = son);
-	}
-	void rotate(Node *p) {
-		int m = p->who();
-		Node *fa = p->fa, *pa = p->fa->fa;
-		link(p->son[m ^ 1], fa, m);
-		link(p, pa, pa ? fa->who() : 0);
-		link(fa, p, m ^ 1);
-		if (!pa) _rt = p;
-	}
-	Node *begin_ptr() const {
-		if (!_rt) return end_ptr();
-		Node *p = _rt;
-		while (p->son[0]) p = p->son[0];
-		return p;
-	}
-	Node *end_ptr() const {
-		return nullptr;
-	}
-	Node *back_ptr() const {
-		if (!_rt) return end_ptr();
-		Node *p = _rt;
-		while (p->son[1]) p = p->son[1];
-		return p;
-	}
 };
+
 template<typename T>
 struct is_const {
 	static constexpr bool value = false;
 };
-
 template<typename T>
 struct is_const<const T> {
 	static constexpr bool value = true;
 };
-
 template<typename T>
-struct is_const<const T&> {
+struct is_const<const T &> {
+	static constexpr bool value = true;
+};
+template<typename T>
+struct is_const<const T &&> {
 	static constexpr bool value = true;
 };
 
