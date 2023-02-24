@@ -199,22 +199,20 @@ public:
 
 	pair<iterator, bool> insert(const value_type &value) {
 		Node **ptr = &_rt, *last = nullptr;
-		while (true) {
-			if (!*ptr) {
-				Node *ret = *ptr = _alloc.allocate(1);
-				new (ret) Node{last, value};
-				++_size;
-				update_insert(ret);
-				return {{ret, this}, true};
-			}
+		while (*ptr) {
 			Node *p = last = *ptr;
 			if (opt(p->data.first, value.first))
 				ptr = &p->son[1];
 			else if (opt(value.first, p->data.first))
 				ptr = &p->son[0];
 			else
-				return {{*ptr, this}, false};
+				return {{p, this}, false};
 		}
+		Node *ret = *ptr = _alloc.allocate(1);
+		new (ret) Node{last, value};
+		++_size;
+		update_insert(ret);
+		return {{ret, this}, true};
 	}
 
 	void erase(iterator const &pos) {
