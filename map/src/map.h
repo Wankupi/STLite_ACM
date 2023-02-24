@@ -373,8 +373,6 @@ private:
 				s->color = red;
 				s = sk;
 				// not break, go in case 6
-				//				std::cout << "after case 5 rotate:" << std::endl;
-				//				this->debug_recursive_show();
 			}
 			// case 6
 			if (s->son[k ^ 1] && s->son[k ^ 1]->color == red) {
@@ -382,8 +380,6 @@ private:
 				s->son[k ^ 1]->color = black;
 				s->color = p->color;
 				p->color = black;
-				//				std::cout << "after case 6 rotate:" << std::endl;
-				//				this->debug_recursive_show();
 				break;
 			}
 			// now the children of s are black
