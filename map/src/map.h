@@ -317,37 +317,30 @@ private:
 			s->color = black;
 	}
 	void update_insert(Node *p) {
-		while (true) {
-			if (!p->fa) {
-				p->color = black;
-				_rt = p;
-				break;
-			}
-			if (p->fa->color == black)
-				break;
+		Node *uncle = nullptr;
+		while (p->fa && p->fa->color == red && (uncle = p->fa->brother()) && uncle->color == red) {
 			// p has red father imply p has grandpa
-			Node *uncle = p->fa->brother();
-			if (uncle && uncle->color == red) {
-				p->fa->fa->color = red;
-				p->fa->color = black;
-				uncle->color = black;
-				p = p->fa->fa;
-				continue;
-			}
-			Node *fa = p->fa, *pa = fa->fa;
-			int m = p->who(), n = fa->who();
-			if (m == n) {
-				rotate(fa);
-				fa->color = black;
-				pa->color = red;
-				break;
-			}
-			rotate(p);
-			rotate(p);
-			p->color = black;
-			pa->color = red;
-			break;
+			p->fa->fa->color = red;
+			p->fa->color = black;
+			uncle->color = black;
+			p = p->fa->fa;
 		}
+		Node *fa = p->fa;
+		if (!fa) {
+			p->color = black;
+			_rt = p;
+			return;
+		}
+		if (fa->color == black) return;
+		Node *pa = fa->fa;
+		int m = p->who(), n = fa->who();
+		if (m != n) {
+			rotate(p);
+			fa = p;
+		}
+		rotate(fa);
+		fa->color = black;
+		pa->color = red;
 	}
 	void update_erase(Node *p, int k) {
 		while (true) {
