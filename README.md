@@ -31,9 +31,9 @@ CS1951 assignment, ACM Class, SJTU
 
 ## 截止日期
 
-`vector`：3月5日（第三周周日）18:30前
+`vector`：3 月 5 日（第三周周日）18:30 前
 
-`priority_queue`：未发布
+`priority_queue`：3 月 19 日（第五周周日）18:30 前
 
 `map`：未发布
 
