@@ -1,12 +1,12 @@
-#include "exceptions.hpp"
-#include "map.h"
-#include <algorithm>
-#include <cassert>
-#include <ctime>
 #include <fstream>
+#include <cassert>
 #include <iostream>
-#include <map>
 #include <vector>
+#include <algorithm>
+#include <map>
+#include <ctime>
+#include "exceptions.hpp"
+#include "map.hpp"
 
 const int MAXN = 50001;
 

@@ -1,14 +1,14 @@
-#include "map.h"
-#include <algorithm>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <map>
-#include <queue>
-#include <vector>
+#include<iostream>
+#include<map>
+#include<ctime>
+#include<queue>
+#include<cmath>
+#include<vector>
+#include<cstdio>
+#include<cstdlib>
+#include<cstring>
+#include<algorithm>
+#include "map.hpp"
 
 using namespace std;
 

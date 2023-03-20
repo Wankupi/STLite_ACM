@@ -1,4 +1,4 @@
-#include "map.h"
+#include "map.hpp"
 #include <iostream>
 #include <cassert>
 #include <string>
@@ -7,7 +7,6 @@ class Integer {
 public:
 	static int counter;
 	int val;
-
 	Integer(int val) : val(val) {
 		counter++;
 	}
