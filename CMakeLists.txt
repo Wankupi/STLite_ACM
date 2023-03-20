@@ -10,6 +10,6 @@ enable_testing()
 
 #add_subdirectory(vector)
 
-#add_subdirectory(map)
+add_subdirectory(map)
 
-add_subdirectory(priority_queue)
+#add_subdirectory(priority_queue)
