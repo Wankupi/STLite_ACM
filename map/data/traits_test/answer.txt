@@ -1,0 +1,6 @@
+bidirectional_iterator  false   false   true    true    false
+bidirectional_iterator  false   false   true    true    false
+bidirectional_iterator  false   false   true    true    false
+bidirectional_iterator  true    true    true    true    false
+bidirectional_iterator  true    true    true    true    false
+bidirectional_iterator  true    true    true    true    false

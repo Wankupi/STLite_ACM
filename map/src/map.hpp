@@ -7,14 +7,8 @@
 #include <cstddef>
 #include <functional>
 
-#include <iostream>
-
-
-#include <iostream>
-
 namespace sjtu {
-class my_true_type {};
-class my_false_type {};
+
 enum NodeColor { red,
 				 black };
 
@@ -79,7 +73,7 @@ private:
 		using value_type = map::value_type;
 		using pointer = typename std::conditional<is_const, const value_type *, value_type *>::type;
 		using reference = typename std::conditional<is_const, const value_type &, value_type &>::type;
-		using iterator_category = std::output_iterator_tag;
+		using iterator_category = std::bidirectional_iterator_tag;
 
 	public:
 		using iterator_base::iterator_base;
@@ -408,7 +402,8 @@ template<typename T>
 struct is_const<const T &&> {
 	static constexpr bool value = true;
 };
-
+class my_true_type {};
+class my_false_type {};
 template<typename T>
 struct my_type_traits {
 	using iterator_assignable = typename std::conditional<is_const<typename T::reference>::value, my_false_type, my_true_type>::type;
